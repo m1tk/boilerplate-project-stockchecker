@@ -19,6 +19,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'"],
+      scriptSrc: ["'self'"]
     }
   },
   dnsPrefetchControl: false,
