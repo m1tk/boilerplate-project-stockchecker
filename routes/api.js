@@ -21,14 +21,15 @@ module.exports = function (app) {
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const { stock, like } = req.query;
-      if (!stock) {
+      const { stocks, like } = req.query;
+      if (!stocks) {
         return res.json({
           error: 'Stock must be specified'
         });
       }
-      if (!Array.isArray(stock)) {
-        stock = [stock];
+      var stock;
+      if (!Array.isArray(stocks)) {
+        stock = [stocks];
       }
 
       var ip_hash;
