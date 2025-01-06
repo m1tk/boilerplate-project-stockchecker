@@ -21,15 +21,17 @@ module.exports = function (app) {
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const { stocks, like } = req.query;
-      if (!stocks) {
+      const { stock, like } = req.query;
+      if (!stock) {
         return res.json({
           error: 'Stock must be specified'
         });
       }
-      var stock;
-      if (!Array.isArray(stocks)) {
-        stock = [stocks];
+      var stocks;
+      if (!Array.isArray(stock)) {
+        stocks = [stock];
+      } else {
+        stocks = stock;
       }
 
       var ip_hash;
@@ -45,10 +47,10 @@ module.exports = function (app) {
       }
 
       var obj = [];
-      for (let i = 0; i < stock.length; i++) {
+      for (let i = 0; i < stocks.length; i++) {
         var data;
         try {
-          data = await fetch_stock_quote(stock[i]);
+          data = await fetch_stock_quote(stocks[i]);
         } catch (error) {
           console.error('Error fetching data:', error);
           return res.status(500).json({ error: 'Failed to fetch data from remote API' });
@@ -57,18 +59,18 @@ module.exports = function (app) {
         if (typeof data === 'string') {
           obj.push({ error: data });
         } else {
-          const promise = like ? likes_model.addLike(stock[i], ip_hash)
-                               : likes_model.getLikes(stock[i]);
+          const promise = like ? likes_model.addLike(stocks[i], ip_hash)
+                               : likes_model.getLikes(stocks[i]);
           try {
             const likes = await promise;
-            obj.push({ stock: stock[i], price: data.latestPrice, likes: likes });
+            obj.push({ stock: stocks[i], price: data.latestPrice, likes: likes });
             if (obj.length == 2) {
               obj[0].rel_likes = obj[0].likes - obj[1].likes;
               obj[1].rel_likes = obj[1].likes - obj[0].likes;
               delete obj[0].likes;
               delete obj[1].likes;
               return res.json({ stockData: obj });
-            } else if (obj.length == stock.length) {
+            } else if (obj.length == stocks.length) {
               return res.json({ stockData: obj[0] });
             }
           } catch(err) {
